@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>NP | ULTIMATE LEADERBOARD & STATS</title>
+    <style>
+        :root { --blue: #00f2ff; --purple: #bc13fe; --gold: #ffd700; --red: #ff3e3e; --bg: #050506; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { font-size: 3.5rem; color: var(--blue); text-shadow: 0 0 25px var(--blue); margin: 0; font-weight: 900; }
+        .mvp-badge { background: var(--gold); color: #000; padding: 5px 20px; font-weight: 900; border-radius: 5px; display: inline-block; margin: 15px 0 30px; border: 2px solid #fff; }
+        .leaderboard { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        .row { background: rgba(255, 255, 255, 0.02); transition: 0.2s; }
+        .row td { padding: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .rank-2 { border-left: 8px solid var(--gold); background: rgba(255, 215, 0, 0.05) !important; }
+        .team-name { font-size: 1.3rem; font-weight: bold; color: #fff; display: block; text-align: left; }
+        .player-list { font-size: 0.8rem; color: #777; display: block; text-align: left; }
+        .btn { padding: 10px 18px; cursor: pointer; text-transform: uppercase; font-weight: 900; border-radius: 4px; transition: 0.3s; margin-left: 5px; font-size: 0.7rem; border: 2px solid; }
+        .btn-claim { background: transparent; border-color: var(--gold); color: var(--gold); }
+        .btn-stats { background: transparent; border-color: var(--blue); color: var(--blue); }
+        .btn:hover { background: #fff; color: #000; border-color: #fff; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 9999; justify-content: center; align-items: center; overflow-y: auto; padding: 20px 0; }
+        .window { width: 90%; max-width: 900px; padding: 40px; border: 5px solid var(--blue); background: #000; position: relative; }
+        .window.gold { border-color: var(--gold); }
+        .close { position: absolute; top: 10px; right: 20px; font-size: 2.5rem; cursor: pointer; color: #fff; z-index: 100; }
+        table.stats-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table.stats-table th { border-bottom: 2px solid #333; padding: 12px; color: var(--blue); text-align: left; font-size: 0.9rem; }
+        table.stats-table td { padding: 10px; border-bottom: 1px solid #111; text-align: left; font-size: 0.9rem; }
+        .mvp-row { background: rgba(255, 215, 0, 0.2) !important; color: var(--gold); font-weight: bold; }
+        .my-team-row { background: rgba(0, 242, 255, 0.05); }
+    </style>
+</head>
+<body>
+
+<div id="stats-overlay" class="overlay">
+    <div class="window">
+        <span class="close" onclick="closeAll()">×</span>
+        <h2 style="color: var(--blue); margin-top:0;">FULL TOURNAMENT STATISTICS</h2>
+        <div style="max-height: 70vh; overflow-y: auto;">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>RANK</th>
+                        <th>PLAYER</th>
+                        <th>TEAM</th>
+                        <th>KILLS</th>
+                        <th>DEATHS</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="cert-overlay" class="overlay">
+    <div class="window gold">
+        <span class="close" onclick="closeAll()">×</span>
+        <h1 style="color: var(--gold); font-family: serif; margin:0;">GOLDEN CERTIFICATE</h1>
+        <p>BEST SQUAD PERFORMANCE</p>
+        <h2 style="font-size: 2.5rem;">NEON PHANTOMS</h2>
+        <div style="border: 2px solid var(--gold); padding: 25px; margin: 20px 0;">
+            <p style="font-size: 1.2rem;">GLOBAL TOURNAMENT MVP: <span style="color: var(--gold); font-size: 2rem; display:block;">NP | S-KAMRON</span></p>
+            <p style="margin-top:20px;">ROSTER: NP | S-KAMRON | NP | D-WAVE | NP | T-SHOCK</p>
+        </div>
+        <p style="color: #444;">SEASON 2026 | VERIFIED BY SYSTEM</p>
+    </div>
+</div>
+
+<div class="container">
+    <h1>GLOBAL LEADERBOARD</h1>
+    <div class="mvp-badge">🏆 TOURNAMENT MVP: NP | S-KAMRON (42 KILLS)</div>
+    <table class="leaderboard"><tbody id="main-table"></tbody></table>
+</div>
+
+<script>
+    const teamData = [
+        { name: "APEX PREDATORS", tag: "AP" },
+        { name: "NEON PHANTOMS", tag: "NP" },
+        { name: "SHADOW WALKERS", tag: "SW" },
+        { name: "CYBER DRAGONS", tag: "CD" },
+        { name: "VOID RUNNERS", tag: "VR" },
+        { name: "TITAN SQUAD", tag: "TS" },
+        { name: "GHOST REAPERS", tag: "GR" },
+        { name: "ALPHA OMEGA", tag: "AO" },
+        { name: "SILENT KILLERS", tag: "SK" },
+        { name: "NEON GHOSTS", tag: "NG" },
+        { name: "DARK MATTER", tag: "DM" },
+        { name: "STORM BORN", tag: "SB" },
+        { name: "PIXEL KINGS", tag: "PK" },
+        { name: "IRON LEGION", tag: "IL" },
+        { name: "BETA SQUAD", tag: "BS" },
+        { name: "WAR LORDS", tag: "WL" },
+        { name: "TECH NINJAS", tag: "TN" },
+        { name: "PHANTOM BLADES", tag: "PB" },
+        { name: "ULTRA VIOLET", tag: "UV" },
+        { name: "CHAOS THEORY", tag: "CT" }
+    ];
+
+    const randomNicks = ["Shadow", "Rex", "Ghost", "Killer", "Viper", "Dragon", "Storm", "Ace", "Zero", "Ninja", "Blade", "Titan", "Rogue", "Wolf", "Demon", "Frost", "Pyro", "Zen", "Void", "Raptor", "Slayer", "Warrior", "Neo", "Flash", "Night"];
+
+    const allPlayers = [];
+    const table = document.getElementById('main-table');
+
+    teamData.forEach((team, i) => {
+        let p1, p2, p3;
+        if(i === 1) { // Твоя команда
+            p1 = { n: "NP | S-KAMRON", k: 42, d: 2, s: "MVP" };
+            p2 = { n: "NP | D-WAVE", k: 24, d: 10, s: "ELITE" };
+            p3 = { n: "NP | T-SHOCK", k: 21, d: 9, s: "ELITE" };
+        } else {
+            p1 = { n: team.tag + " | " + randomNicks[Math.floor(Math.random()*randomNicks.length)], k: Math.floor(Math.random()*15)+5, d: Math.floor(Math.random()*20)+5, s: "PRO" };
+            p2 = { n: team.tag + " | " + randomNicks[Math.floor(Math.random()*randomNicks.length)], k: Math.floor(Math.random()*10)+2, d: Math.floor(Math.random()*20)+5, s: "PRO" };
+            p3 = { n: team.tag + " | " + randomNicks[Math.floor(Math.random()*randomNicks.length)], k: Math.floor(Math.random()*5), d: Math.floor(Math.random()*25)+10, s: "NOOB" };
+        }
+        allPlayers.push({team: team.name, ...p1}, {team: team.name, ...p2}, {team: team.name, ...p3});
+
+        const row = document.createElement('tr');
+        row.className = `row rank-${i+1}`;
+        row.innerHTML = `
+            <td style="width: 50px; font-weight: 900;">#${i+1}</td>
+            <td>
+                <span class="team-name">${team.name}</span>
+                <span class="player-list">${p1.n}, ${p2.n}, ${p3.n}</span>
+            </td>
+            <td style="color: var(--blue); font-weight: bold;">${(25000 - i*800).toLocaleString()}</td>
+            <td style="text-align: right;">
+                <button class="btn btn-stats" onclick="showStats()">Stats</button>
+                <button class="btn btn-claim" onclick="handleClaim(${i})">Claim</button>
+            </td>
+        `;
+        table.appendChild(row);
+    });
+
+    const statsBody = document.getElementById('stats-body');
+    allPlayers.sort((a,b) => b.k - a.k).forEach((p, idx) => {
+        const r = document.createElement('tr');
+        if(p.n === "NP | S-KAMRON") r.className = "mvp-row";
+        else if(p.team === "NEON PHANTOMS") r.className = "my-team-row";
+        r.innerHTML = `<td>#${idx+1}</td><td>${p.n}</td><td>${p.team}</td><td style="color: #0f0; font-weight:bold;">${p.k}</td><td style="color: #f00;">${p.d}</td><td>${p.s}</td>`;
+        statsBody.appendChild(r);
+    });
+
+    function handleClaim(i) {
+        if(i === 0) alert("💰 ПРИЗ: 500.000 РУБ.\nДоступно только капитану Apex Predators.");
+        else if(i === 1) document.getElementById('cert-overlay').style.display = 'flex';
+        else alert("Награда не предусмотрена для этого места.");
+    }
+    function showStats() { document.getElementById('stats-overlay').style.display = 'flex'; }
+    function closeAll() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
+</script>
+</body>
+</html>
